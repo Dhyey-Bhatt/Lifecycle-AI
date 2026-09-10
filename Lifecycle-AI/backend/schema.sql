@@ -167,3 +167,59 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
 ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow authenticated read to logs" ON public.activity_logs FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Allow system insert to logs" ON public.activity_logs FOR INSERT WITH CHECK (true);
+
+-- ==========================================
+-- 9. LIFECYCLE AI CHAT & MODEL TRAINING DATA
+-- ==========================================
+
+-- 9.1 Conversations Table
+CREATE TABLE IF NOT EXISTS public.conversations (
+  id TEXT PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT 'New Conversation',
+  persona TEXT CHECK (persona IN ('ADMIN', 'HOUSEHELP', 'SENIOR')) NOT NULL DEFAULT 'ADMIN',
+  provider TEXT NOT NULL DEFAULT 'openai',
+  model TEXT NOT NULL DEFAULT 'gpt-4o-mini',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own conversations" ON public.conversations 
+  FOR ALL TO authenticated USING (auth.uid() = user_id);
+
+-- 9.2 Messages Table
+CREATE TABLE IF NOT EXISTS public.messages (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT REFERENCES public.conversations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT CHECK (role IN ('user', 'assistant', 'system')) NOT NULL,
+  content TEXT NOT NULL,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_conv_created ON public.messages(conversation_id, created_at);
+
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own messages" ON public.messages 
+  FOR ALL TO authenticated USING (auth.uid() = user_id);
+
+-- 9.3 Chat Feedback Table (For Training Dataset Curation & Model Evaluation)
+CREATE TABLE IF NOT EXISTS public.chat_feedback (
+  id TEXT PRIMARY KEY,
+  message_id TEXT REFERENCES public.messages(id) ON DELETE CASCADE,
+  conversation_id TEXT REFERENCES public.conversations(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  rating TEXT CHECK (rating IN ('positive', 'negative')) NOT NULL,
+  feedback_text TEXT,
+  model TEXT,
+  provider TEXT,
+  training_eligible BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.chat_feedback ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can insert feedback" ON public.chat_feedback 
+  FOR ALL TO authenticated USING (auth.uid() = user_id);
+

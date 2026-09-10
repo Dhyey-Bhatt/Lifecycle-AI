@@ -12,11 +12,22 @@ import {
   UserCheck,
   Heart,
   Wrench,
-  RefreshCw
+  RefreshCw,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelLeft
 } from 'lucide-react';
 import { useAuth, DEMO_USERS } from '../context/AuthContext';
 
-export const Navbar = ({ onOpenThemeModal, onSearch, metrics }) => {
+export const Navbar = ({ 
+  onOpenThemeModal, 
+  onSearch, 
+  metrics, 
+  onToggleMobileNav,
+  onToggleCollapse,
+  isSidebarCollapsed
+}) => {
   const navigate = useNavigate();
   const { currentUser, loginAsRole, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -39,14 +50,25 @@ export const Navbar = ({ onOpenThemeModal, onSearch, metrics }) => {
 
   return (
     <header className="navbar">
-      {/* Search Bar */}
-      <div className="navbar-search">
-        <Search size={16} color="var(--text-muted)" />
-        <input 
-          type="text" 
-          placeholder={isHousehelp ? "Search appliance manuals & maintenance..." : "Global search products, warranties, serials, invoices..."}
-          onChange={(e) => onSearch && onSearch(e.target.value)}
-        />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+        {/* Mobile Hamburger Toggle Button (Mobile Only) */}
+        <button 
+          className="btn btn-secondary btn-icon mobile-hamburger-btn"
+          onClick={onToggleMobileNav}
+          title="Toggle Menu"
+        >
+          <Menu size={20} color="var(--color-primary)" />
+        </button>
+
+        {/* Search Bar */}
+        <div className="navbar-search" style={{ flex: 1, maxWidth: '520px' }}>
+          <Search size={16} color="var(--text-muted)" />
+          <input 
+            type="text" 
+            placeholder={isHousehelp ? "Search appliance manuals & maintenance..." : "Global search products, warranties, serials, invoices..."}
+            onChange={(e) => onSearch && onSearch(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Actions */}
@@ -67,7 +89,7 @@ export const Navbar = ({ onOpenThemeModal, onSearch, metrics }) => {
           }}
         >
           <ShieldCheck size={14} />
-          <span>Family Main Vault</span>
+          <span className="hide-on-mobile">Family Main Vault</span>
         </div>
 
         {/* Theme Picker Trigger */}

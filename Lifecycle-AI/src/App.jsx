@@ -27,10 +27,41 @@ export { fetchWithAuth };
 export function MainLayout() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('lifecycle_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [metrics, setMetrics] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useAuth();
   const isAdmin = currentUser?.role === 'Admin';
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('lifecycle_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  // Keyboard shortcut Ctrl+B or Cmd+B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebarCollapse();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const fetchMetrics = async () => {
     try {
@@ -45,6 +76,11 @@ export function MainLayout() {
     fetchMetrics();
   }, [currentUser]);
 
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [location.pathname]);
+
   const handleDocumentAdded = () => {
     fetchMetrics();
     navigate('/documents');
@@ -52,16 +88,31 @@ export function MainLayout() {
 
   return (
     <div className="app-container">
+      {/* Mobile Drawer Backdrop */}
+      {isMobileNavOpen && (
+        <div 
+          className="mobile-backdrop active" 
+          onClick={() => setIsMobileNavOpen(false)} 
+        />
+      )}
+
       {/* Sidebar Navigation */}
       <Sidebar 
+        isOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebarCollapse}
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenThemeModal={() => setIsThemeModalOpen(true)}
         metrics={metrics}
       />
 
       {/* Main Content Area */}
-      <div className="main-wrapper">
+      <div className={`main-wrapper ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <Navbar 
+          onToggleMobileNav={() => setIsMobileNavOpen(!isMobileNavOpen)}
+          onToggleCollapse={toggleSidebarCollapse}
+          isSidebarCollapsed={isSidebarCollapsed}
           onOpenThemeModal={() => setIsThemeModalOpen(true)}
           metrics={metrics}
         />

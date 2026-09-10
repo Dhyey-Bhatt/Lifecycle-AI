@@ -7,11 +7,24 @@
  * - Exposes `apiRequest`, `fetchWithAuth`, `API_BASE_URL`, and `getApiUrl`
  */
 
-// Dynamically derive base URL from environment variable
-const rawBaseUrl = import.meta.env.VITE_API_BASE_URL;
-export const API_BASE_URL = (rawBaseUrl !== undefined && rawBaseUrl !== null && rawBaseUrl !== '')
-  ? rawBaseUrl.replace(/\/+$/, '')
-  : 'http://localhost:5000';
+// Dynamically derive base URL from environment variable or browser hostname for mobile LAN support
+const getComputedBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && envUrl.trim() !== '' && envUrl !== 'undefined') {
+    return envUrl.replace(/\/+$/, '');
+  }
+
+  // If accessed over LAN/WiFi (e.g. http://192.168.1.x:5173 on mobile)
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    const protocol = window.location.protocol || 'http:';
+    const host = window.location.hostname;
+    return `${protocol}//${host}:5000`;
+  }
+
+  return 'http://localhost:5000';
+};
+
+export const API_BASE_URL = getComputedBaseUrl();
 
 /**
  * Constructs a dynamic full API URL from an endpoint or relative path
@@ -19,12 +32,13 @@ export const API_BASE_URL = (rawBaseUrl !== undefined && rawBaseUrl !== null && 
  * @returns {string} full URL
  */
 export const getApiUrl = (endpoint = '') => {
-  if (!endpoint) return API_BASE_URL;
+  const base = getComputedBaseUrl();
+  if (!endpoint) return base;
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
     return endpoint;
   }
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  return `${API_BASE_URL}${cleanEndpoint}`;
+  return `${base}${cleanEndpoint}`;
 };
 
 /**
@@ -33,13 +47,25 @@ export const getApiUrl = (endpoint = '') => {
  */
 export async function apiRequest(endpoint, options = {}) {
   const url = getApiUrl(endpoint);
-  const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+  let token = null;
+  let userRole = null;
+  if (typeof localStorage !== 'undefined') {
+    token = localStorage.getItem('lifecycle_auth_token') || localStorage.getItem('token');
+    try {
+      const savedUser = localStorage.getItem('lifecycle_user');
+      if (savedUser) {
+        const u = JSON.parse(savedUser);
+        userRole = u.role;
+      }
+    } catch (e) {}
+  }
 
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
 
   const headers = {
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(userRole ? { 'x-persona-role': userRole } : {}),
     ...(options.headers || {})
   };
 
@@ -147,7 +173,7 @@ export const api = {
       body: JSON.stringify(payload)
     }),
 
-    // Interactive Lifecycle Assistant Chatbot
+    // Interactive Lifecycle Assistant Chatbot (Legacy Endpoint)
     chat: (payload) => apiRequest('/api/ai/chat', {
       method: 'POST',
       body: JSON.stringify(payload)
@@ -164,7 +190,99 @@ export const api = {
     }
   },
 
-  // 4. Senior Citizen Health & Wellness Hub
+  // 4. Production ChatGPT-Style Chat System
+  chat: {
+    getModelInfo: () => apiRequest('/api/chat/model-info'),
+    getProviders: () => apiRequest('/api/chat/providers'),
+    switchProvider: (provider) => apiRequest('/api/chat/switch-provider', {
+      method: 'POST',
+      body: JSON.stringify({ provider })
+    }),
+    getConversations: () => apiRequest('/api/chat/conversations'),
+    createConversation: (payload = {}) => apiRequest('/api/chat/conversations', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+    getMessages: (conversationId) => apiRequest(`/api/chat/conversations/${conversationId}/messages`),
+    sendMessage: (conversationId, content) => apiRequest(`/api/chat/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ content })
+    }),
+    renameConversation: (conversationId, title) => apiRequest(`/api/chat/conversations/${conversationId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ title })
+    }),
+    deleteConversation: (conversationId) => apiRequest(`/api/chat/conversations/${conversationId}`, {
+      method: 'DELETE'
+    }),
+    sendFeedback: (messageId, payload = {}) => apiRequest(`/api/chat/messages/${messageId}/feedback`, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }),
+    streamMessage: async (conversationId, content, { onToken, onDone, onError } = {}) => {
+      const url = getApiUrl(`/api/chat/conversations/${conversationId}/stream`);
+      let token = typeof localStorage !== 'undefined'
+        ? (localStorage.getItem('lifecycle_auth_token') || localStorage.getItem('token'))
+        : null;
+      let userRole = null;
+      try {
+        const u = JSON.parse(localStorage.getItem('lifecycle_user'));
+        if (u) userRole = u.role;
+      } catch (e) {}
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(userRole ? { 'x-persona-role': userRole } : {})
+          },
+          body: JSON.stringify({ content })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `Stream failed with status ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const parsed = JSON.parse(line.substring(6));
+                if (parsed.type === 'token' && onToken) {
+                  onToken(parsed.token);
+                } else if (parsed.type === 'done' && onDone) {
+                  onDone(parsed.result);
+                } else if (parsed.type === 'error' && onError) {
+                  onError(new Error(parsed.error));
+                }
+              } catch (e) {
+                console.error('Error parsing SSE event:', e, line);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        if (onError) onError(err);
+        else throw err;
+      }
+    }
+  },
+
+  // 5. Senior Citizen Health & Wellness Hub
   senior: {
     getHealth: () => apiRequest('/api/senior/health'),
     logVitals: (payload) => apiRequest('/api/senior/health', {

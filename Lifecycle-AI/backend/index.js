@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import { sampleDocuments, failureRiskKnowledgeBase, familyVaultMembers, aiTrainingDataset } from './data/seedData.js';
+import chatRoutes from './src/routes/chat.routes.js';
 
 dotenv.config();
 
@@ -12,11 +13,14 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors({
   origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-persona-role', 'x-user-role']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
+
+// Mount Production AI Chat System Routes
+app.use('/api/chat', chatRoutes);
 
 // In-Memory Database initialized with seed data
 let documents = [...sampleDocuments];

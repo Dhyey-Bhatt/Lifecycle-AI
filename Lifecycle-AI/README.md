@@ -1,180 +1,269 @@
 # 🛡️ Lifecycle AI — Smart Family Vault, Warranty & Senior Care Platform
+### Complete User Guide & End-to-End Workflow Manual
 
-An intelligent, multi-persona household management platform that automates document & warranty lifecycles, delivers AI predictive hardware failure analytics, generates legal consumer dispute claims, and powers a dedicated **Senior Citizen Health & Wellness Hub**.
-
----
-
-## 🌟 Key Highlights & Architecture
-
-- 🚀 **Vite + React 18**: Ultra-fast frontend with interactive pastel theme customizer.
-- 🔐 **Multi-Persona Role-Based Access Control (RBAC)**: Distinct permissions and tailored UI workflows for **Admin**, **Househelp**, and **Senior Citizen**.
-- 🛡️ **Strict URL Security**: `<ProtectedRoute />` layer preventing unauthorized access even when navigating directly via URL.
-- 🌐 **Centralized Dynamic API Layer**: Single-file API architecture (`src/api/index.js`) with dynamic base URL derived from `.env` (`VITE_API_BASE_URL`).
-- 🤖 **AI Intelligence Suite**:
-  - **Vision & NER Extraction**: Multi-modal OCR extracting serials, dates, warranties & prices.
-  - **Risk Prediction Engine**: Telemetry-grounded failure curves across 45,000+ consumer reports.
-  - **AI Claim & Legal Dispute Generator**: Produces formal grievance notices, RMA escalations, and insurance letters.
-  - **Extended Warranty Advisor**: Actuarial cost-benefit calculator.
-  - **Asset Resale Estimator**: Secondary market depreciation curves.
-  - **AI Training Studio**: Fine-tunes custom Vision-NER models and exports `.jsonl` datasets.
-  - **Senior Health Precautions Engine**: Biometric telemetry analysis & daily wellness guidelines.
+Welcome to **Lifecycle AI** — your all-in-one smart household platform. Lifecycle AI simplifies household management by organizing receipts and warranties, predicting hardware failure risks, drafting legal dispute claims, estimating resale values, powering a dedicated Senior Citizen Health Hub, and providing a ChatGPT-like AI assistant tailored to your role.
 
 ---
 
-## 👥 User-Wise Workflows & Personas
+## 📑 Table of Contents
+
+1. [Understanding User Roles & Personas](#1-understanding-user-roles--personas)
+2. [User Workflows](#2-user-workflows)
+   - [Workflow 1: Scanning & Uploading Receipts](#workflow-1-scanning--uploading-receipts)
+   - [Workflow 2: Tracking Document & Warranty Lifecycles](#workflow-2-tracking-document--warranty-lifecycles)
+   - [Workflow 3: Using the AI Chat Assistant (`/chat`)](#workflow-3-using-the-ai-chat-assistant-chat)
+   - [Workflow 4: Senior Citizen Health & Wellness Hub (`/senior-health`)](#workflow-4-senior-citizen-health--wellness-hub-senior-health)
+   - [Workflow 5: AI Hardware Failure Risk Predictor (`/risk-prediction`)](#workflow-5-ai-hardware-failure-risk-predictor-risk-prediction)
+   - [Workflow 6: AI Legal Claim & Dispute Generator (`/claim-generator`)](#workflow-6-ai-legal-claim--dispute-generator-claim-generator)
+   - [Workflow 7: Extended Warranty Cost-Benefit Advisor (`/advisor`)](#workflow-7-extended-warranty-cost-benefit-advisor-advisor)
+   - [Workflow 8: Product Resale Valuation Estimator (`/resale-estimator`)](#workflow-8-product-resale-valuation-estimator-resale-estimator)
+   - [Workflow 9: Managing Family Vault Members (`/family-vault`)](#workflow-9-managing-family-vault-members-family-vault)
+   - [Workflow 10: AI Training Studio & Dataset Pipeline (`/ai-training`)](#workflow-10-ai-training-studio--dataset-pipeline-ai-training)
+   - [Workflow 11: Pastel Theme & Color Customizer](#workflow-11-pastel-theme--color-customizer)
+3. [Permission & Access Matrix](#3-permission--access-matrix)
+4. [Getting Started & Local Setup](#4-getting-started--local-setup)
+
+---
+
+## 1. Understanding User Roles & Personas
+
+Lifecycle AI features **Multi-Persona Role-Based Access Control (RBAC)**. The platform adapts its features, navigation, and AI assistant behavior based on who is logged in:
 
 ```
-                            ┌────────────────────────┐
-                            │    Lifecycle Portal    │
-                            │        /login          │
-                            └───────────┬────────────┘
-                                        │
-             ┌──────────────────────────┼──────────────────────────┐
-             ▼                          ▼                          ▼
-   ┌───────────────────┐      ┌───────────────────┐      ┌───────────────────┐
-   │       ADMIN       │      │     HOUSEHELP     │      │  SENIOR CITIZEN   │
-   │  (Master Control) │      │  (Home Care & AI) │      │ (Wellness & Care) │
-   └─────────┬─────────┘      └─────────┬─────────┘      └─────────┬─────────┘
-             │                          │                          │
-   • Scan & Upload Receipts   • Appliance Inventory      • Health Vitals Telemetry
-   • AI Claim Generator       • Appliance AI Assistant   • Medication Checklist
-   • AI Risk Prediction       • View Warranty Expiries   • AI Health Precautions
-   • Cost-Benefit Advisor     • Cleaning & Manual Lookup • Emergency SOS Hotline
-   • Resale Estimator         • (Protected from Admin)   • Product Safety Guides
-   • AI Model Retraining                                 
-   • Manage Family Vault                                 
+                             ┌────────────────────────┐
+                             │    Lifecycle Portal    │
+                             │        /login          │
+                             └───────────┬────────────┘
+                                         │
+              ┌──────────────────────────┼──────────────────────────┐
+              ▼                          ▼                          ▼
+    ┌───────────────────┐      ┌───────────────────┐      ┌───────────────────┐
+    │       ADMIN       │      │     HOUSEHELP     │      │  SENIOR CITIZEN   │
+    │  (Master Control) │      │  (Home Care & AI) │      │ (Wellness & Care) │
+    └─────────┬─────────┘      └─────────┬─────────┘      └─────────┬─────────┘
+              │                          │                          │
+    • Scan & Upload Receipts   • Appliance Inventory      • Health Vitals Telemetry
+    • AI Claim Generator       • Appliance AI Assistant   • Medication Checklist
+    • AI Risk Prediction       • View Warranty Expiries   • AI Health Precautions
+    • Cost-Benefit Advisor     • Cleaning & Manual Lookup • Emergency SOS Hotline
+    • Resale Estimator         • (Prices/Claims Hidden)   • Product Safety Guides
+    • AI Model Retraining                                 
+    • Manage Family Vault                                 
 ```
 
----
-
-### 1. 👑 Administrator Persona (`Dhyey Bhatt`)
-> **Role Goal:** Master control of household assets, financial analytics, family member permissions, and legal warranty enforcement.
-
-#### Workflow:
-1. **Document Upload & AI Scan**: Upload receipts/invoices &rarr; AI Vision OCR automatically parses Brand, Model, Serial, Purchase Date, and Warranty expiry.
-2. **Warranty Lifecycle Monitoring**: Tracks documents across `Valid`, `Expiring Soon`, `Expired`, `Renewed`, and `In Claim` statuses.
-3. **AI Risk Prediction**: Evaluates component failure risk curves before manufacturer warranty expires.
-4. **AI Claim Generator**: Produces ready-to-dispatch zero-deductible legal dispute notices and RMA service tickets.
-5. **Cost-Benefit Advisor**: Calculates actuarial expected value ($) of buying extended warranty protection vs. self-insuring.
-6. **Resale Value Estimator**: Forecasts depreciation trajectories and determines the optimal 60-day selling window.
-7. **AI Training Studio**: Inspects user-verified ground truth data and triggers custom model fine-tuning with JSONL export.
-8. **Senior Health Oversight**: Monitors health telemetry and caregiver assignments for family elders.
+### How to Switch Roles in the App
+- In the top right corner of the navigation bar, click on your **User Profile / Persona badge**.
+- Select **"Switch Persona"** and choose between **Admin**, **Househelp**, or **Senior Citizen**.
+- You can also log out and log in via `/login` with single-click demo accounts.
 
 ---
 
-### 2. 🧹 Househelp Persona (`Maria Santos`)
-> **Role Goal:** Smooth home maintenance, appliance operation lookup, and scheduled service tracking without access to sensitive financial records or administrative tools.
-
-#### Workflow:
-1. **Appliance & Equipment Inventory**: Accesses the view-only appliance catalog to verify equipment models and warranty coverage.
-2. **AI HomeCare Assistant**:
-   - Asks maintenance questions (e.g. *"How do I clean the Samsung refrigerator coils?"*, *"How to descale the espresso machine?"*).
-   - Looks up step-by-step cleaning procedures, filter replacement schedules, and operating manuals.
-3. **Service Alert Verification**: Checks when appliances are due for routine maintenance before breakdowns occur.
-4. **Restricted Security Access**: Sensitive financial modules (claims, ML studio, member management) are automatically hidden and blocked.
+## 2. User Workflows
 
 ---
 
-### 3. 👴 Senior Citizen Persona (`Robert Vance`)
-> **Role Goal:** Simplified household device safety alongside a personalized, dedicated Health & Wellness Hub for daily vitals, medication adherence, and proactive health advice.
+### Workflow 1: Scanning & Uploading Receipts
+*Role: Admin*
 
-#### Workflow:
-1. **Senior Health & Wellness Hub (`/senior-health`)**:
-   - **Daily Vitals Telemetry**: Logs and monitors Blood Pressure (Systolic/Diastolic), Blood Glucose, Resting BPM, and SpO2.
-   - **Prescription Schedule Tracker**: Interactive checklist for Morning, Lunch, Afternoon, and Evening medications with progress tracking.
-   - **AI Senior Health Precautions Engine**: Context-aware lifestyle advice (hydration alerts, gentle walking routines, ambient temperature controls, joint mobility).
-2. **Emergency SOS & Caregiver Directory**: One-touch SOS trigger with simulated emergency dispatch to primary caregiver (*Dhyey Bhatt*) and family doctor.
-3. **Appliance Safety Assistance**: Consults **SeniorCare AI** for operating microwave, TV, or kitchen appliances with safety precautions.
+1. Click the **"+ Upload Document"** button in the sidebar or top navigation bar.
+2. Drag and drop your receipt or invoice image (JPEG, PNG, PDF) into the upload dropzone.
+3. The **AI Multi-Modal OCR Scanner** analyzes the document:
+   - Auto-extracts: **Product Name**, **Brand**, **Model Number**, **Serial Number**, **Invoice Number**, **Purchase Date**, **Purchase Price**, **Warranty Period**, and **Extended Warranty**.
+4. Review the extracted fields in the live preview.
+5. Choose an assigned family member and click **"Save to Family Vault"**.
+6. The asset is immediately registered, status calculated, and added to the AI knowledge base.
 
 ---
 
-## 🔒 Permission & Security Matrix
+### Workflow 2: Tracking Document & Warranty Lifecycles
+*Roles: Admin (Full Edit/Delete), Househelp (View-Only), Senior Citizen (View-Only)*
 
-| Feature / Route | Route Path | Admin | Househelp | Senior Citizen | Direct URL Access if Unauthorized |
+1. Navigate to **"Documents"** (`/documents`) from the sidebar.
+2. **Filter by Status**:
+   - 🟢 **Valid**: Active warranty protection.
+   - 🟡 **Expiring Soon**: Less than 45 days remaining (recommended to review extended warranty or prepare claims).
+   - 🔴 **Expired**: Coverage has lapsed.
+   - 🔵 **In Claim**: Active dispute or RMA in progress.
+3. **Filter by Category**: Laptops & Computers, Smartphones & Tablets, Home Appliances, Audio & Wearables.
+4. **Search**: Search by product name, model number, serial number, invoice reference, or retailer.
+5. Click on any document card to view detailed specifications, warranty certificates, and claim history.
+
+---
+
+### Workflow 3: Using the AI Chat Assistant (`/chat`)
+*Roles: All Roles (Persona-Tailored & Server-Enforced)*
+
+The AI Chat system at `/chat` provides a production-grade ChatGPT-like experience powered by an AI Gateway:
+
+1. **Start a Conversation**:
+   - Click **"+ New Chat"** in the chat sidebar.
+   - Type your question in natural language (e.g. *"When does the warranty for my MacBook expire?"*).
+   - Press `Enter` to send, or `Shift + Enter` for a new line.
+2. **Role-Specific AI Behavior**:
+   - 👑 **Admin (`LifecycleBot`)**: Has full access. Answers questions about serial numbers, expiry dates, claim strategies, repair vs. buy cost-benefit, and senior wellness summaries.
+   - 🧹 **Househelp (`HomeCare AI`)**: Focuses on appliance operations, step-by-step cleaning guides, error codes, and maintenance schedules. Financial purchase prices and private family records are strictly hidden.
+   - 👴 **Senior Citizen (`SeniorCare AI`)**: Uses warm, patient language to assist with daily medication reminders, blood pressure advice, and safe kitchen appliance operation. Includes safety disclaimers and emergency advice.
+3. **Interactive Features**:
+   - **Markdown & Code Blocks**: Cleanly formatted bullet points, bold keywords, and syntax-highlighted code with a **"Copy Code"** button.
+   - **Copy Response**: Click **"Copy"** below any bot message.
+   - **Feedback Rating**: Click **👍 (Thumbs Up)** or **👎 (Thumbs Down)** on responses to help improve AI accuracy.
+   - **Rename & Delete**: Rename chat titles or delete conversations from the chat sidebar.
+   - **Search Conversations**: Find past chat sessions using the sidebar search box.
+
+---
+
+### Workflow 4: Senior Citizen Health & Wellness Hub (`/senior-health`)
+*Roles: Senior Citizen, Admin*
+
+1. Navigate to **"Senior Health"** (`/senior-health`).
+2. **Log Daily Vitals**:
+   - Enter **Systolic / Diastolic Blood Pressure** (e.g., `120/80`), **Blood Glucose** (mg/dL), and **Resting Heart Rate** (BPM).
+   - Click **"Save Vitals Entry"** to record telemetry and calculate health standing.
+3. **Track Daily Medications**:
+   - View your prescribed medication schedule (Morning, Lunch, Afternoon, Evening).
+   - Check off medications as you take them (e.g., *Atorvastatin*, *Metformin XR*, *Vitamin D3*).
+4. **AI Health Precautions Engine**:
+   - View personalized lifestyle precautions generated from your vitals (hydration goals, low-impact walking routines, joint mobility tips).
+5. **Emergency SOS Trigger**:
+   - Click the **"🚨 EMERGENCY SOS"** button to simulate immediate caregiver dispatch and primary physician notifications.
+
+---
+
+### Workflow 5: AI Hardware Failure Risk Predictor (`/risk-prediction`)
+*Role: Admin*
+
+1. Navigate to **"Risk Prediction"** (`/risk-prediction`).
+2. Select any registered asset (e.g. *MacBook Pro*, *Samsung Refrigerator*, *LG OLED TV*).
+3. The AI engine evaluates component degradation based on **45,000+ consumer hardware repair reports**:
+   - View **Overall Health Score** (0-100) and **Risk Status** (*Optimal*, *Moderate Watch*, *High Alert*).
+   - Inspect individual failure mode probabilities (e.g., Inverter Compressor, Display Flex Cable, USB-C Port).
+   - Read community insights and preventive maintenance tips before warranty lapse.
+
+---
+
+### Workflow 6: AI Legal Claim & Dispute Generator (`/claim-generator`)
+*Role: Admin*
+
+1. Navigate to **"Claim Generator"** (`/claim-generator`).
+2. Select the broken device and describe the manifested hardware fault.
+3. Choose the desired legal template:
+   - 🏛️ **Formal Consumer Grievance & Legal Notice**: Statutory notice citing Consumer Protection regulations for uncooperative brands.
+   - ✉️ **Urgent Service Escalation Email**: High-priority escalation message to service center managers.
+   - 📋 **Official Warranty & Insurance Claim Letter**: Standard policy lodgement for extended warranty underwriters.
+   - 🛠️ **Technical Service Request Ticket**: Formal repair ticket requesting on-site technician dispatch.
+4. Click **"Generate AI Claim Document"**.
+5. Copy the generated legal notice or export it as a text file for immediate dispatch.
+
+---
+
+### Workflow 7: Extended Warranty Cost-Benefit Advisor (`/advisor`)
+*Role: Admin*
+
+1. Navigate to **"Warranty Advisor"** (`/advisor`).
+2. Enter the device purchase price, extended warranty cost, extended coverage duration, and planned ownership years.
+3. The actuarial engine calculates:
+   - Empirical failure probability in years 2–5.
+   - Average out-of-pocket repair costs.
+   - **Net Expected Value (NEV)** in dollars.
+4. Review the verdict: **"STRONGLY RECOMMENDED TO BUY"**, **"SKIP & SELF-INSURE"**, or **"BORDERLINE DECISION"** with clear financial rationale.
+
+---
+
+### Workflow 8: Product Resale Valuation Estimator (`/resale-estimator`)
+*Role: Admin*
+
+1. Navigate to **"Resale Estimator"** (`/resale-estimator`).
+2. Select an asset and its physical condition (*Mint with Box*, *Good*, *Fair*, *Poor*).
+3. View current secondary market valuations benchmarked across **eBay**, **Swappa**, **Local Marketplace**, and **Manufacturer Trade-In**.
+4. Inspect the **18-Month Valuation Projection Chart** to identify the optimal **60-day selling window** before product depreciation accelerates.
+
+---
+
+### Workflow 9: Managing Family Vault Members (`/family-vault`)
+*Role: Admin*
+
+1. Navigate to **"Family Vault"** (`/family-vault`).
+2. View all active family members and their assigned device counts.
+3. Click **"+ Add Family Member"** to invite a new user.
+4. Assign access roles:
+   - **Admin (Owner)**: Full master control.
+   - **Editor**: Can upload documents, edit extracted details, and generate claims.
+   - **Viewer**: Read-only access to view invoices and ask the AI assistant.
+
+---
+
+### Workflow 10: AI Training Studio & Dataset Pipeline (`/ai-training`)
+*Role: Admin*
+
+1. Navigate to **"AI Training Studio"** (`/ai-training`).
+2. Review user-verified OCR extraction samples in the ground-truth pipeline.
+3. Select training hyperparameters (Epochs, Learning Rate, Model Architecture).
+4. Click **"Trigger Fine-Tuning Job"** to simulate model weight updates.
+5. Click **"Export Dataset (.JSONL)"** to download formatted datasets for fine-tuning open-source LLMs or custom Vision-NER models.
+
+---
+
+### Workflow 11: Pastel Theme & Color Customizer
+*Roles: All Roles*
+
+1. Click the **Palette / Theme icon** in the top navigation bar.
+2. Select from curated pastel aesthetic themes:
+   - 💜 **Royal Violet (Default)**
+   - 🩵 **Ocean Breeze**
+   - 💚 **Emerald Mint**
+   - 🧡 **Sunset Peach**
+   - 🩷 **Rose Gold**
+3. Choose your preferred corner border radius and typography scale.
+4. Preferences are saved automatically to `localStorage` and persist across sessions.
+
+---
+
+## 3. Permission & Access Matrix
+
+| Feature / Module | Route Path | Admin | Househelp | Senior Citizen | Unauthorized Access Behavior |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Main Dashboard** | `/` | ✅ | ✅ | ✅ | Allowed |
-| **All Documents / Appliances** | `/documents` | Full (Add/Delete) | View-Only | View-Only | Allowed (Role-tailored view) |
-| **AI Chat Assistant** | `/chat` | Full Access | Home Maintenance | Health & Safety | Allowed (Role-tailored persona) |
-| **Senior Health Hub** | `/senior-health` | ✅ | ❌ | ✅ | 🚫 **Blocked with Security Screen** |
-| **Family Vault** | `/family-vault` | Full Manage | ❌ | View Members | 🚫 **Blocked with Security Screen** |
-| **AI Risk Prediction** | `/risk-prediction` | ✅ | ❌ | ❌ | 🚫 **Blocked with Security Screen** |
-| **AI Claim Generator** | `/claim-generator` | ✅ | ❌ | ❌ | 🚫 **Blocked with Security Screen** |
-| **Cost-Benefit Advisor** | `/advisor` | ✅ | ❌ | ❌ | 🚫 **Blocked with Security Screen** |
-| **Resale Estimator** | `/resale-estimator` | ✅ | ❌ | ❌ | 🚫 **Blocked with Security Screen** |
-| **AI Training Studio** | `/ai-training` | ✅ | ❌ | ❌ | 🚫 **Blocked with Security Screen** |
+| **Main Dashboard** | `/` | ✅ | ✅ | ✅ | Accessible to all |
+| **Documents Catalog** | `/documents` | Full (Add/Edit/Delete) | View-Only | View-Only | Accessible (Role-tailored) |
+| **AI Chat Assistant** | `/chat` | Full Access | Home Maintenance | Health & Safety | Accessible (Role-tailored) |
+| **Senior Health Hub** | `/senior-health` | ✅ | ❌ | ✅ | 🚫 Blocked by `<ProtectedRoute />` |
+| **Family Vault** | `/family-vault` | Full Manage | ❌ | View Members | 🚫 Blocked by `<ProtectedRoute />` |
+| **Risk Prediction** | `/risk-prediction` | ✅ | ❌ | ❌ | 🚫 Blocked by `<ProtectedRoute />` |
+| **Claim Generator** | `/claim-generator` | ✅ | ❌ | ❌ | 🚫 Blocked by `<ProtectedRoute />` |
+| **Warranty Advisor** | `/advisor` | ✅ | ❌ | ❌ | 🚫 Blocked by `<ProtectedRoute />` |
+| **Resale Estimator** | `/resale-estimator` | ✅ | ❌ | ❌ | 🚫 Blocked by `<ProtectedRoute />` |
+| **AI Training Studio** | `/ai-training` | ✅ | ❌ | ❌ | 🚫 Blocked by `<ProtectedRoute />` |
 
 ---
 
-## ⚙️ Environment Configuration & Centralized API
-
-All API calls flow through the single module [`src/api/index.js`](file:///c:/dhyey_projects/New_project/Lifecycle-AI/src/api/index.js).
-
-### 1. Configure `.env`
-Create a `.env` file in the project root:
-```env
-# Point to your backend server URL
-VITE_API_BASE_URL=http://localhost:5000
-```
-> To point to staging or production, simply modify `VITE_API_BASE_URL` in `.env` without modifying any frontend source files.
-
-### 2. Using the API Module in Code
-```javascript
-import { api } from './api';
-
-// Metrics & Health
-const metrics = await api.metrics.get();
-
-// Document Operations
-const docs = await api.documents.getAll({ category: 'Laptops & Computers' });
-const newDoc = await api.documents.create(formData);
-
-// AI Intelligence
-const scanResult = await api.ai.extract({ rawText: 'simulated_ocr' });
-const riskProfile = await api.ai.predictRisk({ productName: 'MacBook Pro', currentAgeMonths: 14 });
-
-// Senior Health & Wellness
-const healthData = await api.senior.getHealth();
-await api.senior.logVitals({ bpSys: 120, bpDia: 80, glucose: 100, heartRate: 72 });
-```
-
----
-
-## 🚀 Quick Start Guide
+## 4. Getting Started & Local Setup
 
 ### Prerequisites
-- Node.js (v18.0.0 or higher)
-- npm or yarn
+- **Node.js** (v18 or higher)
+- **npm** (v9 or higher)
 
-### 1. Install Dependencies
-```bash
-# Install frontend dependencies
-npm install
-
-# Install backend dependencies
-cd backend
-npm install
-cd ..
+### 1. Configure Backend Environment
+In `backend/.env`:
+```env
+PORT=5000
+AI_PROVIDER=openai
+AI_MODEL=gpt-4o-mini
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### 2. Run Backend Server
+### 2. Configure Frontend Environment
+In `.env` (project root):
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
+
+### 3. Start the Application
 ```bash
+# Terminal 1: Start Backend (Runs on http://localhost:5000)
 cd backend
 npm run dev
-# Backend runs on http://localhost:5000
-```
 
-### 3. Run Frontend Application
-```bash
+# Terminal 2: Start Frontend (Runs on http://localhost:5173)
 npm run dev
-# Frontend runs on http://localhost:5173
 ```
 
----
-
-## 🎨 Interactive Testing & Demo Guide
-
-1. Open `http://localhost:5173/login` in your browser.
-2. Click **"Enter as Admin"**, **"Enter as Househelp"**, or **"Enter as Senior"** on the interactive persona cards.
-3. Switch personas on the fly at any time using the **Profile Menu in the top Navigation Bar**.
-4. Test URL security by logging in as **Househelp** and manually navigating to `/senior-health` or `/ai-training` to see the **Access Restricted** security screen.
-5. Open the **Pastel Theme Engine** in the sidebar to customize primary, surface, and accent color tokens.
+Open `http://localhost:5173` in your browser to start using **Lifecycle AI**!
